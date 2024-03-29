@@ -1,0 +1,32 @@
+html {
+    background-color: #f3f3f3;
+}
+
+.port-map-list {
+    height: calc(100vh - 40px);
+    min-height: 240px;
+    /*text-align: center;*/
+    padding: 0 20px;
+    margin: 20px;
+    background-color: white;
+    border-radius: 5px;
+}
+
+.code {
+    padding: 2px 5px;
+    background: #efefef;
+    border-radius: 3px;
+    color: #6e6e6e;
+}
+
+.btn-green {
+    background-color: #52c41a;
+    color: #fff;
+    border-color: #4fbc1a;
+}
+
+.btn-green:where(.css-dev-only-do-not-override-djtmh8).ant-btn-default:not(:disabled):not(.ant-btn-disabled):hover {
+    background-color: #5ad71d;
+    border-color: #64dc2a;
+    color: #fff;
+}
