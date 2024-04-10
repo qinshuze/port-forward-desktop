@@ -1,5 +1,5 @@
 import {PortMap} from "../../hook/PortMapsContext";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {getUUID} from "../../functions";
 import {Typography, Button, ConfigProvider, Form, Input, InputNumber, Select, Space} from "antd";
 import {SwapOutlined} from "@ant-design/icons";
@@ -11,6 +11,7 @@ export interface InputPortMapProps {
   value?: PortMap
   onReverse?: (value: PortMap) => void
   onChanged?: (value: PortMap) => void
+  onValidated?: (value: boolean) => void
   validate?: boolean
 }
 
@@ -73,11 +74,23 @@ export function InputPortMap(props: InputPortMapProps) {
     return setErrorText("")
   }
 
+  const validateHandle = () => {
+    validator()
+  }
+
   const reverse = (data: PortMap) => {
     const newValue = {...data, source: data.target, target: data.source}
     setValue(newValue)
     props.onReverse?.(newValue)
   }
+
+  useEffect(() => {
+    validateHandle()
+  }, []);
+
+  useEffect(() => {
+    props.onValidated?.(!!errorText)
+  }, [errorText]);
 
   return <>
     <Space.Compact className={errorText && "border-err"}>
@@ -85,19 +98,19 @@ export function InputPortMap(props: InputPortMapProps) {
         <Button style={{backgroundColor: "#f6f6f6"}}>来源</Button>
       </ConfigProvider>
       <Select
-        onBlur={validator}
+        onBlur={validateHandle}
         onSelect={(v) => changeHandle({...value, source: {...value.source, proto: v}})}
         style={{width: 70}} value={value.source.proto}
         options={protoOptions}
       />
       <Input
-        onBlur={validator}
+        onBlur={validateHandle}
         onChange={(e) => changeHandle({...value, source: {...value.source, ip: e.target.value}})}
         style={{width: 150}}
         value={value.source.ip} placeholder="127.0.0.1"
       />
       <InputNumber
-        onBlur={validator}
+        onBlur={validateHandle}
         onChange={(v) => changeHandle({...value, source: {...value.source, port: v || 0}})}
         controls={false}
         style={{width: 60}}
@@ -110,20 +123,20 @@ export function InputPortMap(props: InputPortMapProps) {
         icon={<SwapOutlined rotate={180}/>}
       />
       <Select
-        onBlur={validator}
+        onBlur={validateHandle}
         onSelect={(v) => changeHandle({...value, target: {...value.target, proto: v}})}
         style={{width: 70}} value={value.target.proto}
         options={protoOptions}
       />
       <Input
-        onBlur={validator}
+        onBlur={validateHandle}
         onChange={(e) => changeHandle({...value, target: {...value.target, ip: e.target.value}})}
         style={{width: 150}}
         value={value.target.ip}
         placeholder="127.0.0.1"
       />
       <InputNumber
-        onBlur={validator}
+        onBlur={validateHandle}
         onChange={(v) => changeHandle({...value, target: {...value.target, port: v || 0}})}
         controls={false}
         style={{width: 60}}

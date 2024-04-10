@@ -17,6 +17,7 @@ const initPortMap: PortMap = {
 function SavePortMapModal(props: { modal?: ModalProps, data?: PortMap[], onOk?: (data: PortMap[]) => any }) {
   /** 初始化状态 **/
   const [portMaps, setPortMaps] = useReducer(portMapsReducer, props.data || [initPortMap])
+  const [submitDisable, setSubmitDisable] = useState(true)
   const [submitLoading, setSubmitLoading] = useState(false)
 
   /** 定义事件处理函数 **/
@@ -45,17 +46,21 @@ function SavePortMapModal(props: { modal?: ModalProps, data?: PortMap[], onOk?: 
     setPortMaps({ type: "changed", payload: [{ ...value}] })
   }
 
+  const onValidatedHandle = (value: boolean) => {
+    setSubmitDisable(value)
+  }
+
   /** 数据处理 **/
 
 
   /** 视图渲染 **/
-  return <Modal width={790} title="添加端口映射" cancelText="取消" okText="提交" {...props.modal} onOk={onSubmitHandle}
+  return <Modal okButtonProps={{disabled: submitDisable}} width={790} title="添加端口映射" cancelText="取消" okText="提交" {...props.modal} onOk={onSubmitHandle}
     confirmLoading={submitLoading}>
     <Space style={{ marginTop: 10, width: "100%" }} direction="vertical" size="middle">
       {
         portMaps.map((item) => {
           return <Row key={item.id}>
-            <Col span={22}><InputPortMap onReverse={onChangedHandle} onChanged={onChangedHandle} value={item} /></Col>
+            <Col span={22}><InputPortMap onReverse={onChangedHandle} onValidated={onValidatedHandle} onChanged={onChangedHandle} value={item} /></Col>
             <Col span={2} style={{ textAlign: "right" }}>
               <Button
                 onClick={() => onDelHandle([item.id])}

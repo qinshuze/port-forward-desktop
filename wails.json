@@ -10,12 +10,6 @@
     "name": "qsz",
     "email": "1191249254@qq.com"
   },
-  "build": {
-    "windows": {
-      "ldflags": "-H windowsgui"
-    }
-  },
-  "icon": "build/appicon.png",
   "info": {
     "companyName": "qszdev.com",
     "productName": "Port Forward"
