@@ -1,16 +1,11 @@
 # README
 
-## About
+## 介绍
 
-This is the official Wails Svelte-TS template.
+本工具基于wails开发的一个简单的端口转发工具，可以添加、删除、查询PC上的端口转发规则
+如果你已经厌烦了不断的重复使用冗长的netsh命令来管理PC上的端口转发，那你可以使用本工具来简单的管理PC上的端口转发规则
 
-## Live Development
+![image](https://github.com/qinshuze/port-forward-desktop/assets/22045080/e7c5de54-03be-4340-8fc8-0091ec84842f)
+![image](https://github.com/qinshuze/port-forward-desktop/assets/22045080/9ffb6441-ed4f-42b7-8f99-850cb90049e5)
+![image](https://github.com/qinshuze/port-forward-desktop/assets/22045080/583702be-9645-4c40-84d7-a260f3e4a6a2)
 
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
-
-## Building
-
-To build a redistributable, production mode package, use `wails build`.
