@@ -12,6 +12,7 @@
   },
   "info": {
     "companyName": "qszdev.com",
-    "productName": "Port Forward"
+    "productName": "Port Forward",
+    "productVersion": "1.0.1"
   }
 }
