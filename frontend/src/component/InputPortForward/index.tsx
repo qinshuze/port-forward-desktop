@@ -1,4 +1,4 @@
-import {PortMap} from "../../hook/PortMapsContext";
+import {PortForward} from "../../hook/PortForwardContext";
 import React, {useEffect, useState} from "react";
 import {getUUID} from "../../functions";
 import {Typography, Button, ConfigProvider, Form, Input, InputNumber, Select, Space} from "antd";
@@ -7,15 +7,15 @@ import "./index.css"
 
 const {Text} = Typography;
 
-export interface InputPortMapProps {
-  value?: PortMap
-  onReverse?: (value: PortMap) => void
-  onChanged?: (value: PortMap) => void
+export interface InputPortForwardProps {
+  value?: PortForward
+  onReverse?: (value: PortForward) => void
+  onChanged?: (value: PortForward) => void
   onValidated?: (value: boolean) => void
   validate?: boolean
 }
 
-const initValue: PortMap = {
+const initValue: PortForward = {
   id: getUUID(),
   source: {ip: "", port: 0, proto: "ipv4"},
   target: {ip: "", port: 0, proto: "ipv4"},
@@ -29,13 +29,13 @@ const protoOptions = [
 const ipv4Regex = /^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$/;
 const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|(64:ff9b::(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
 
-export function InputPortMap(props: InputPortMapProps) {
+export function InputPortForward(props: InputPortForwardProps) {
   const validate: boolean = props.validate || true
 
   const [value, setValue] = useState(props.value || initValue)
   const [errorText, setErrorText] = useState("")
 
-  const changeHandle = (data: PortMap) => {
+  const changeHandle = (data: PortForward) => {
     setValue(data)
     props.onChanged?.(data)
   }
@@ -81,7 +81,7 @@ export function InputPortMap(props: InputPortMapProps) {
     validator()
   }
 
-  const reverse = (data: PortMap) => {
+  const reverse = (data: PortForward) => {
     const newValue = {...data, source: data.target, target: data.source}
     setValue(newValue)
     props.onReverse?.(newValue)

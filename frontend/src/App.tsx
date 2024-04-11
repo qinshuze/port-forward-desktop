@@ -1,8 +1,8 @@
-import {PortMapList} from "./page/PortMapList";
+import PortForwardList from "./page/PortForwardList";
 import "./App.css"
 
 export function App() {
   return <>
-    <PortMapList />
+    <PortForwardList />
   </>
 }

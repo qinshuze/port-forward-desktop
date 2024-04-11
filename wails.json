@@ -14,5 +14,6 @@
     "companyName": "qszdev.com",
     "productName": "Port Forward",
     "productVersion": "1.0.1"
-  }
+  },
+  "wailsjsdir": "./frontend/src"
 }

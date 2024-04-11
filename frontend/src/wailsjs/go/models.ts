@@ -16,12 +16,12 @@ export namespace main {
 	        this.proto = source["proto"];
 	    }
 	}
-	export class PortMap {
+	export class PortForward {
 	    source: IpAddress;
 	    target: IpAddress;
 	
 	    static createFrom(source: any = {}) {
-	        return new PortMap(source);
+	        return new PortForward(source);
 	    }
 	
 	    constructor(source: any = {}) {

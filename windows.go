@@ -1,3 +1,5 @@
+//go:build windows
+
 package main
 
 import (
@@ -14,7 +16,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type WindowsPortMaper struct{}
+type WindowsPortForwarder struct{}
 
 var log *logrus.Logger
 
@@ -48,8 +50,8 @@ func contains(slice []int, elem int) bool {
 	return false
 }
 
-func (ws WindowsPortMaper) Get() ([]PortMap, error) {
-	var portMapList = []PortMap{}
+func (ws WindowsPortForwarder) Get() ([]PortForward, error) {
+	var portForwardList = []PortForward{}
 
 	// 获取命令输出
 	command := "netsh interface portproxy show all"
@@ -81,7 +83,7 @@ func (ws WindowsPortMaper) Get() ([]PortMap, error) {
 		}
 
 		portmaptext += reg.ReplaceAllString(protoRow, " ")
-		portmaptext += (item + ";")
+		portmaptext += item + ";"
 	}
 
 	reg1, _ := regexp.Compile(`\s+`)
@@ -94,17 +96,17 @@ func (ws WindowsPortMaper) Get() ([]PortMap, error) {
 		sourcePort, _ := strconv.ParseInt(portMapItem[3], 10, 16)
 		targetPort, _ := strconv.ParseInt(portMapItem[5], 10, 16)
 
-		sourceProto, err := NewProtoctl(portMapItem[0])
+		sourceProto, err := NewProtocol(portMapItem[0])
 		if err != nil {
 			log.Error(err.Error())
 		}
 
-		targetProto, err := NewProtoctl(portMapItem[1])
+		targetProto, err := NewProtocol(portMapItem[1])
 		if err != nil {
 			log.Error(err.Error())
 		}
 
-		portMapList = append(portMapList, PortMap{
+		portForwardList = append(portForwardList, PortForward{
 			Source: IpAddress{
 				Proto: sourceProto,
 				Ip:    portMapItem[2],
@@ -118,24 +120,24 @@ func (ws WindowsPortMaper) Get() ([]PortMap, error) {
 		})
 	}
 
-	return portMapList, nil
+	return portForwardList, nil
 }
 
-func (ws WindowsPortMaper) Add(pm PortMap) error {
+func (ws WindowsPortForwarder) Add(pf PortForward) error {
 	targetProto := "v4"
 	sourceProto := "v4"
-	if pm.Source.Proto == IPV6 {
+	if pf.Source.Proto == IPV6 {
 		sourceProto = "v6"
 	}
 
-	if pm.Target.Proto == IPV6 {
+	if pf.Target.Proto == IPV6 {
 		targetProto = "v6"
 	}
 
 	// 调用系统命令添加端口映射
 	command := fmt.Sprintf(
 		"netsh interface portproxy add %sto%s listenaddress=%s listenport=%d connectaddress=%s connectport=%d",
-		sourceProto, targetProto, pm.Source.Ip, pm.Source.Port, pm.Target.Ip, pm.Target.Port,
+		sourceProto, targetProto, pf.Source.Ip, pf.Source.Port, pf.Target.Ip, pf.Target.Port,
 	)
 	cmd := exec.Command("cmd", "/C", command)
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
@@ -151,37 +153,40 @@ func (ws WindowsPortMaper) Add(pm PortMap) error {
 	return nil
 }
 
-func (ws WindowsPortMaper) BatchAdd(pms []PortMap) error {
+func (ws WindowsPortForwarder) BatchAdd(pfs []PortForward) error {
 
-	var rollbackPMs []PortMap
+	var rollbackPFs []PortForward
 
-	for index := range pms {
-		err := ws.Add(pms[index])
+	for index := range pfs {
+		err := ws.Add(pfs[index])
 		if err != nil {
-			ws.BatchDelete(rollbackPMs)
+			err := ws.BatchDelete(rollbackPFs)
+			if err != nil {
+				return err
+			}
 			return err
 		}
 
-		rollbackPMs = append(rollbackPMs, pms[index])
+		rollbackPFs = append(rollbackPFs, pfs[index])
 	}
 	return nil
 }
 
-func (ws WindowsPortMaper) Delete(pm PortMap) error {
+func (ws WindowsPortForwarder) Delete(pf PortForward) error {
 	targetProto := "v4"
 	sourceProto := "v4"
-	if pm.Source.Proto == IPV6 {
+	if pf.Source.Proto == IPV6 {
 		sourceProto = "v6"
 	}
 
-	if pm.Target.Proto == IPV6 {
+	if pf.Target.Proto == IPV6 {
 		targetProto = "v6"
 	}
 
 	// 调用系统命令删除端口映射
 	command := fmt.Sprintf(
 		"netsh interface portproxy del %sto%s listenport=%d listenaddress=%s",
-		sourceProto, targetProto, pm.Source.Port, pm.Source.Ip,
+		sourceProto, targetProto, pf.Source.Port, pf.Source.Ip,
 	)
 	cmd := exec.Command("cmd", "/C", command)
 	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
@@ -197,18 +202,21 @@ func (ws WindowsPortMaper) Delete(pm PortMap) error {
 	return nil
 }
 
-func (ws WindowsPortMaper) BatchDelete(pms []PortMap) error {
+func (ws WindowsPortForwarder) BatchDelete(pfs []PortForward) error {
 
-	var rollbackPMs []PortMap
+	var rollbackPFs []PortForward
 
-	for index := range pms {
-		err := ws.Delete(pms[index])
+	for index := range pfs {
+		err := ws.Delete(pfs[index])
 		if err != nil {
-			ws.BatchAdd(rollbackPMs)
+			err := ws.BatchAdd(rollbackPFs)
+			if err != nil {
+				return err
+			}
 			return err
 		}
 
-		rollbackPMs = append(rollbackPMs, pms[index])
+		rollbackPFs = append(rollbackPFs, pfs[index])
 	}
 
 	return nil

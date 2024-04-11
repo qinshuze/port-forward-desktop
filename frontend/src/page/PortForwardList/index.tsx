@@ -2,24 +2,24 @@ import { MinusOutlined, PlusOutlined, QuestionCircleOutlined } from "@ant-design
 import { Button, Col, Modal, Popconfirm, Row, Space, Table, message, notification } from "antd";
 import { ModalProps } from "antd/es/modal/interface";
 import React, { useEffect, useReducer, useState } from "react";
-import * as PortMapApi from "../../api/PortMapApi";
-import { InputPortMap } from "../../component/InputPortMap";
+import * as PortForwardApi from "../../api/ApiPortForwarder";
+import { InputPortForward } from "../../component/InputPortForward";
 import { getUUID } from "../../functions";
-import { PortMap, portMapsReducer } from "../../hook/PortMapsContext";
+import { PortForward, portForwardsReducer } from "../../hook/PortForwardContext";
 import './index.css';
 
-const initPortMap: PortMap = {
+const initPortForward: PortForward = {
   id: getUUID(),
   source: { ip: "", port: 0, proto: "ipv4" },
   target: { ip: "", port: 0, proto: "ipv4" },
 }
 
-function SavePortMapModal(props: { modal?: ModalProps, data?: PortMap[], onOk?: (data: PortMap[]) => any }) {
+function SavePortForwardModal(props: { modal?: ModalProps, data?: PortForward[], onOk?: (data: PortForward[]) => any }) {
   /** 初始化状态 **/
-  const [portMaps, setPortMaps] = useReducer(portMapsReducer, props.data || [initPortMap])
+  const [portForwards, setPortForwards] = useReducer(portForwardsReducer, props.data || [initPortForward])
   const [submitDisable, setSubmitDisable] = useState(true)
   const [submitLoading, setSubmitLoading] = useState(false)
-  const [inputItems, setInputItems] = useState<Record<string, {validated: boolean}>>(portMaps.reduce<Record<string, {validated: boolean}>>((obj, item) => {
+  const [inputItems, setInputItems] = useState<Record<string, {validated: boolean}>>(portForwards.reduce<Record<string, {validated: boolean}>>((obj, item) => {
     obj[item.id] = {validated: false};
     return obj;
   }, {}))
@@ -27,8 +27,8 @@ function SavePortMapModal(props: { modal?: ModalProps, data?: PortMap[], onOk?: 
   /** 定义事件处理函数 **/
   const onSubmitHandle = () => {
     setSubmitLoading(true)
-    PortMapApi.BatchAdd(portMaps)
-      .then(() => props.onOk?.(portMaps))
+    PortForwardApi.BatchAdd(portForwards)
+      .then(() => props.onOk?.(portForwards))
       .catch((reason) => {
         notification.error({
           message: "操作失败",
@@ -40,18 +40,18 @@ function SavePortMapModal(props: { modal?: ModalProps, data?: PortMap[], onOk?: 
 
   const onAddHandle = () => {
     const id = getUUID()
-    setPortMaps({ type: "added", payload: [{ ...initPortMap, id }] })
+    setPortForwards({ type: "added", payload: [{ ...initPortForward, id }] })
   }
 
   const onDelHandle = (ids: string[]) => {
-    setPortMaps({ type: "deleted", payload: ids })
+    setPortForwards({ type: "deleted", payload: ids })
     const newInputItems = {...inputItems}
     ids.forEach(id => (delete newInputItems[id]))
     setInputItems(newInputItems)
   }
 
-  const onChangedHandle = (value: PortMap) => {
-    setPortMaps({ type: "changed", payload: [{ ...value}] })
+  const onChangedHandle = (value: PortForward) => {
+    setPortForwards({ type: "changed", payload: [{ ...value}] })
   }
 
   const onValidatedHandle = (id: string, value: boolean) => {
@@ -77,13 +77,13 @@ function SavePortMapModal(props: { modal?: ModalProps, data?: PortMap[], onOk?: 
     confirmLoading={submitLoading}>
     <Space style={{ marginTop: 10, width: "100%" }} direction="vertical" size="middle">
       {
-        portMaps.map((item) => {
+        portForwards.map((item) => {
           return <Row key={item.id}>
-            <Col span={22}><InputPortMap onReverse={onChangedHandle} onValidated={(value) => onValidatedHandle(item.id, value)} onChanged={onChangedHandle} value={item} /></Col>
+            <Col span={22}><InputPortForward onReverse={onChangedHandle} onValidated={(value) => onValidatedHandle(item.id, value)} onChanged={onChangedHandle} value={item} /></Col>
             <Col span={2} style={{ textAlign: "right" }}>
               <Button
                 onClick={() => onDelHandle([item.id])}
-                disabled={portMaps.length <= 1} danger ghost type="primary"
+                disabled={portForwards.length <= 1} danger ghost type="primary"
                 shape="circle"
               >
                 <MinusOutlined />
@@ -104,25 +104,25 @@ function SavePortMapModal(props: { modal?: ModalProps, data?: PortMap[], onOk?: 
 }
 
 
-interface PortMapListProps {
+interface PortForwardListProps {
   title?: string
   children?: React.ReactNode
 }
 
-const portMapList: PortMap[] = [
-  {
-    id: getUUID(),
-    source: { ip: "192.168.123.137", port: 8080, proto: "ipv4" },
-    target: { ip: "10.0.0.1", port: 80, proto: "ipv4" },
-  },
-  {
-    id: getUUID(),
-    source: { ip: "192.168.123.137", port: 9000, proto: "ipv4" },
-    target: { ip: "10.0.0.1", port: 9001, proto: "ipv4" },
-  }
+const portForwardList: PortForward[] = [
+  // {
+  //   id: getUUID(),
+  //   source: { ip: "192.168.123.137", port: 8080, proto: "ipv4" },
+  //   target: { ip: "10.0.0.1", port: 80, proto: "ipv4" },
+  // },
+  // {
+  //   id: getUUID(),
+  //   source: { ip: "192.168.123.137", port: 9000, proto: "ipv4" },
+  //   target: { ip: "10.0.0.1", port: 9001, proto: "ipv4" },
+  // }
 ];
 
-export function PortMapList(props: PortMapListProps) {
+export default function PortForwardList(props: PortForwardListProps) {
   /** 初始化状态 **/
   const [isOpenSaveModal, setIsOpenSaveModal] = useState(false)
   const [saveModalKey, setSaveModalKey] = useState("add")
@@ -130,8 +130,8 @@ export function PortMapList(props: PortMapListProps) {
   const [isDelLoading, setIsDelLoading] = useState(false)
   const [isDelBtnDisable, setIsDelBtnDisable] = useState(true)
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [savePortMaps, setSavePortMaps] = useReducer(portMapsReducer, [initPortMap])
-  const [tableData, setTableData] = useReducer(portMapsReducer, portMapList)
+  const [savePortForwards, setSavePortForwards] = useReducer(portForwardsReducer, [initPortForward])
+  const [tableData, setTableData] = useReducer(portForwardsReducer, portForwardList)
 
   const onClickRefreshHandle = () => {
     refreshTableData()
@@ -139,7 +139,7 @@ export function PortMapList(props: PortMapListProps) {
 
   const onClickDelHandle = () => {
     setIsDelLoading(true)
-    PortMapApi.BatchDelete(tableData.filter(item => selectedRowKeys.includes(item.id)))
+    PortForwardApi.BatchDelete(tableData.filter(item => selectedRowKeys.includes(item.id)))
       .then(() => refreshTableData())
       .catch((errmsg) => {
         notification.error({
@@ -160,13 +160,13 @@ export function PortMapList(props: PortMapListProps) {
   };
 
   const onAddHandle = () => {
-    setSavePortMaps({ type: "init", payload: [initPortMap] })
+    setSavePortForwards({ type: "init", payload: [initPortForward] })
     setSaveModalKey(getUUID())
     setIsOpenSaveModal(true)
   }
 
   const onEditHandle = () => {
-    setSavePortMaps({
+    setSavePortForwards({
       type: "init",
       payload: tableData.filter(item => selectedRowKeys.includes(item.id))
     })
@@ -178,7 +178,7 @@ export function PortMapList(props: PortMapListProps) {
   const refreshTableData = () => {
     setIsRefreshLoading(true)
     setIsDelBtnDisable(true)
-    PortMapApi.Get()
+    PortForwardApi.Get()
       .then(res => setTableData({ type: "init", payload: [...res] })
       ).catch(errmsg => {
         notification.error({
@@ -207,8 +207,8 @@ export function PortMapList(props: PortMapListProps) {
 
   return <>
     <div className="port-map-list">
-      <SavePortMapModal onOk={onOkHandle} key={saveModalKey} data={savePortMaps} modal={{ open: isOpenSaveModal, onCancel: () => setIsOpenSaveModal(false) }} />
-      {/*<SavePortMapModal data={savePortMaps} modal={{open: isOpenSaveModal, onCancel: () => setIsOpenSaveModal(false)}}/>*/}
+      <SavePortForwardModal onOk={onOkHandle} key={saveModalKey} data={savePortForwards} modal={{ open: isOpenSaveModal, onCancel: () => setIsOpenSaveModal(false) }} />
+      {/*<SavePortForwardModal data={savePortForwards} modal={{open: isOpenSaveModal, onCancel: () => setIsOpenSaveModal(false)}}/>*/}
 
       <Row align="middle">
         <Col span={8}><h2>{props.title || "端口映射列表"}</h2></Col>
@@ -231,14 +231,14 @@ export function PortMapList(props: PortMapListProps) {
         </Col>
       </Row>
 
-      <Table<PortMap> rowSelection={rowSelection} dataSource={tableData} rowKey="id">
-        <Table.Column<PortMap> key="source" title="来源" render={(text, record) => (
+      <Table<PortForward> rowSelection={rowSelection} dataSource={tableData} rowKey="id">
+        <Table.Column<PortForward> key="source" title="来源" render={(text, record) => (
           <code className="code">{record.source.ip}:{record.source.port}</code>
         )} />
-        <Table.Column<PortMap> key="proto" title="协议" render={(text, record) => (
+        <Table.Column<PortForward> key="proto" title="协议" render={(text, record) => (
           <code className="code">{record.source.proto}/{record.target.proto}</code>
         )} />
-        <Table.Column<PortMap> key="target" title="目标" render={(text, record) => (
+        <Table.Column<PortForward> key="target" title="目标" render={(text, record) => (
           <code className="code">{record.target.ip}:{record.target.port}</code>
         )} />
       </Table>
