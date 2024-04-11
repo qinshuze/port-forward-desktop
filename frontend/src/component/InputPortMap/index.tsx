@@ -42,7 +42,6 @@ export function InputPortMap(props: InputPortMapProps) {
 
   const validator = () => {
     if (!validate) return;
-    const errs: string[] = []
     if (!value.source.ip) return setErrorText(`来源 ${value.source.proto} 地址不能为空`)
     if (value.source.ip) {
       switch (value.source.proto) {
@@ -74,6 +73,10 @@ export function InputPortMap(props: InputPortMapProps) {
     return setErrorText("")
   }
 
+  const dispatchValidateEvent = () => {
+    props.onValidated?.(!errorText)
+  }
+
   const validateHandle = () => {
     validator()
   }
@@ -89,7 +92,7 @@ export function InputPortMap(props: InputPortMapProps) {
   }, []);
 
   useEffect(() => {
-    props.onValidated?.(!!errorText)
+    dispatchValidateEvent()
   }, [errorText]);
 
   return <>

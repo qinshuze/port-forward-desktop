@@ -19,6 +19,10 @@ function SavePortMapModal(props: { modal?: ModalProps, data?: PortMap[], onOk?: 
   const [portMaps, setPortMaps] = useReducer(portMapsReducer, props.data || [initPortMap])
   const [submitDisable, setSubmitDisable] = useState(true)
   const [submitLoading, setSubmitLoading] = useState(false)
+  const [inputItems, setInputItems] = useState<Record<string, {validated: boolean}>>(portMaps.reduce<Record<string, {validated: boolean}>>((obj, item) => {
+    obj[item.id] = {validated: false};
+    return obj;
+  }, {}))
 
   /** 定义事件处理函数 **/
   const onSubmitHandle = () => {
@@ -35,20 +39,35 @@ function SavePortMapModal(props: { modal?: ModalProps, data?: PortMap[], onOk?: 
   }
 
   const onAddHandle = () => {
-    setPortMaps({ type: "added", payload: [{ ...initPortMap, id: getUUID() }] })
+    const id = getUUID()
+    setPortMaps({ type: "added", payload: [{ ...initPortMap, id }] })
   }
 
   const onDelHandle = (ids: string[]) => {
     setPortMaps({ type: "deleted", payload: ids })
+    const newInputItems = {...inputItems}
+    ids.forEach(id => (delete newInputItems[id]))
+    setInputItems(newInputItems)
   }
 
   const onChangedHandle = (value: PortMap) => {
     setPortMaps({ type: "changed", payload: [{ ...value}] })
   }
 
-  const onValidatedHandle = (value: boolean) => {
-    setSubmitDisable(value)
+  const onValidatedHandle = (id: string, value: boolean) => {
+    const newInputItems = {...inputItems}
+    newInputItems[id] = {validated: value}
+    setInputItems(newInputItems)
   }
+
+  useEffect(() => {
+    let validated = false
+    for (let key in inputItems) {
+      validated = inputItems[key].validated
+    }
+
+    setSubmitDisable(!validated)
+  }, [inputItems]);
 
   /** 数据处理 **/
 
@@ -60,7 +79,7 @@ function SavePortMapModal(props: { modal?: ModalProps, data?: PortMap[], onOk?: 
       {
         portMaps.map((item) => {
           return <Row key={item.id}>
-            <Col span={22}><InputPortMap onReverse={onChangedHandle} onValidated={onValidatedHandle} onChanged={onChangedHandle} value={item} /></Col>
+            <Col span={22}><InputPortMap onReverse={onChangedHandle} onValidated={(value) => onValidatedHandle(item.id, value)} onChanged={onChangedHandle} value={item} /></Col>
             <Col span={2} style={{ textAlign: "right" }}>
               <Button
                 onClick={() => onDelHandle([item.id])}
