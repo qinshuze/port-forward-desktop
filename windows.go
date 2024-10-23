@@ -93,8 +93,8 @@ func (ws WindowsPortForwarder) Get() ([]PortForward, error) {
 	arr1 := removeEmpty(strings.Split(portmaptext, ";"))
 	for _, item := range arr1 {
 		portMapItem := removeEmpty(strings.Split(item, " "))
-		sourcePort, _ := strconv.ParseInt(portMapItem[3], 10, 16)
-		targetPort, _ := strconv.ParseInt(portMapItem[5], 10, 16)
+		sourcePort, _ := strconv.ParseInt(portMapItem[3], 10, 64)
+		targetPort, _ := strconv.ParseInt(portMapItem[5], 10, 64)
 
 		sourceProto, err := NewProtocol(portMapItem[0])
 		if err != nil {
@@ -110,12 +110,12 @@ func (ws WindowsPortForwarder) Get() ([]PortForward, error) {
 			Source: IpAddress{
 				Proto: sourceProto,
 				Ip:    portMapItem[2],
-				Port:  int16(sourcePort),
+				Port:  uint16(sourcePort),
 			},
 			Target: IpAddress{
 				Proto: targetProto,
 				Ip:    portMapItem[4],
-				Port:  int16(targetPort),
+				Port:  uint16(targetPort),
 			},
 		})
 	}
