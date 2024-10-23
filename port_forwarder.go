@@ -31,7 +31,7 @@ func NewProtocol(value string) (Protocol, error) {
 
 type IpAddress struct {
 	Ip    string   `json:"ip"`
-	Port  int16    `json:"port"`
+	Port  uint16   `json:"port"`
 	Proto Protocol `json:"proto"`
 }
 
